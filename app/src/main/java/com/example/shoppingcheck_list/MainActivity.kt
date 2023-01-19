@@ -1,10 +1,12 @@
 package com.example.shoppingcheck_list
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.view.menu.MenuView.ItemView
@@ -51,6 +53,13 @@ class MainActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.productList)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = RecyclerAdapter(dicks)
+
+        val addButton:Button = findViewById(R.id.add)
+
+        addButton.setOnClickListener{
+            val intent = Intent(this@MainActivity, ProductAddActivity::class.java)
+            startActivity(intent)
+        }
 
     }
 }
