@@ -1,20 +1,23 @@
 package com.example.shoppingcheck_list
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.view.menu.MenuView.ItemView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 public data class Item(val constructorName : String){
-    val name = constructorName
+    var name = constructorName
 }
 
 class RecyclerAdapter(private val items: List<Item>) :
@@ -26,12 +29,20 @@ class RecyclerAdapter(private val items: List<Item>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.product, parent, false)
+        itemView.isClickable = true
         return RecyclerViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val item = holder.item
-        item.findViewById<TextView>(R.id.productName).text = items[position].name
+        val itemText = item.findViewById<TextView>(R.id.productName)
+        itemText.text = items[position].name
+        item.setOnClickListener{
+            val intent = Intent(item.context, ProductEditActivity::class.java)
+            intent.putExtra("item name", itemText.text)
+            intent.putExtra("position", position)
+            (item.context as MainActivity).startActivityForResult(intent, 1)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -40,26 +51,52 @@ class RecyclerAdapter(private val items: List<Item>) :
 }
 
 class MainActivity : AppCompatActivity() {
+    lateinit var items: MutableList<Item>
+    lateinit var recyclerView: RecyclerView
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var dicks = mutableListOf<Item>()
+        items = mutableListOf<Item>()
 
         for (i in 10..30){
-            dicks.add(Item("Дилдо длиной "+i+" см"))
+            items.add(Item("БАНан"))
         }
 
-        val recyclerView: RecyclerView = findViewById(R.id.productList)
+        recyclerView = findViewById(R.id.productList)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = RecyclerAdapter(dicks)
+        recyclerView.adapter = RecyclerAdapter(items)
 
         val addButton:Button = findViewById(R.id.add)
 
         addButton.setOnClickListener{
             val intent = Intent(this@MainActivity, ProductAddActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, 0)
         }
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 0){
+            if (resultCode == RESULT_OK) {
+                items.add(Item(data?.getStringExtra("name").toString()))
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
+        else {
+            if(resultCode == RESULT_OK){
+                val action = data?.getStringExtra("action")
+                val position = data?.getIntExtra("position", 0)
+                if (action == "rename"){
+                    items[position!!].name = data?.getStringExtra("name").toString()
+                }
+                else if (action == "delete"){
+                    items.removeAt(position!!)
+                }
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
     }
 }
