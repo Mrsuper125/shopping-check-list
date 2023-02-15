@@ -50,7 +50,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var items: MutableList<Item>
     lateinit var recyclerView: RecyclerView
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
